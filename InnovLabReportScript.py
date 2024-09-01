@@ -7,23 +7,29 @@ import pandas as pd
 import os
 
 # Define the folder path containing Excel files
-folder_path = 'Downloads\CMC_Project\excel_files\input'
+input_path = 'Downloads/CMC_Project/excel_files/input'
+output_path = 'Downloads/CMC_Project/excel_files/output'
 
 # List all files in the folder
-files = os.listdir(folder_path)
+files = os.listdir(input_path)
 
 # Read Excel files 
 for file in files:
-    file_path = os.path.join(folder_path, file)
+    file_path = os.path.join(input_path, file)
     
     # Read the Excel file into a DataFrame
-    input = pd.read_excel(file_path)
+    input_df = pd.read_excel(file_path)
     
     #creating an empty dataFrame
     reportOutput = pd.DataFrame()
     
-    reportOutput['Durée total (décimal)'] = input.groupby(['Utilisateur', 'Projet'])['Durée (décimal)'].sum()
+    grouped = input_df.groupby(['Utilisateur', 'Projet'], as_index=False)['Durée (décimal)'].sum()
+    
+    # Create new columns in the output DataFrame
+    reportOutput['Utilisateur'] = grouped['Utilisateur']
+    reportOutput['Projet'] = grouped['Projet']
+    reportOutput['Durée total (décimal)'] = grouped['Durée (décimal)']
     reportOutput['Nombre de Jour (1j->7H)'] = reportOutput['Durée total (décimal)'] / 7
     
     
-reportOutput.to_excel('Downloads/CMC_Project/excel_files/output/Result.xlsx')
+reportOutput.to_excel(os.path.join(output_path, 'Result.xlsx'), index=False)
